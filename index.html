@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>家計簿</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f4f6f9;--surface:#fff;--primary:#00b894;--pd:#00a381;--text:#2d3436;--sub:#636e72;--border:#e8ecf0;--danger:#e17055;--warn:#f0a500;--blue:#0984e3}
+body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;background:var(--bg);color:var(--text);font-size:15px;min-height:100vh;padding-bottom:72px}
+.page{display:none;max-width:480px;margin:0 auto;padding-bottom:8px}
+.page.active{display:block}
+.ph{padding:20px 16px 10px;display:flex;justify-content:space-between;align-items:center}
+.ph h1{font-size:18px;font-weight:700}
+.card{background:var(--surface);border-radius:14px;padding:16px;margin:0 16px 12px;border:1px solid var(--border)}
+.hero{background:linear-gradient(135deg,#00b894,#00cec9);border-radius:18px;padding:20px;margin:0 16px 12px;color:#fff;box-shadow:0 4px 16px rgba(0,184,148,.25)}
+.hero .hl{font-size:12px;opacity:.8;margin-bottom:4px}
+.hero .ha{font-size:34px;font-weight:700;letter-spacing:-1px}
+.hero .hs{font-size:12px;opacity:.75;margin-top:4px}
+.hg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.hm{background:rgba(255,255,255,.18);border-radius:10px;padding:10px}
+.hm .ml{font-size:11px;opacity:.8}
+.hm .mv{font-size:17px;font-weight:700;margin-top:2px}
+.tip{background:#fff;border-radius:14px;padding:13px 15px;margin:12px 16px;border-left:4px solid var(--primary);display:flex;gap:10px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.tip-icon{font-size:20px;flex-shrink:0;margin-top:1px}
+.tl{font-size:10px;color:var(--primary);font-weight:700;letter-spacing:.8px;margin-bottom:3px}
+.tt{font-size:13px;line-height:1.6}
+.row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--border)}
+.row:last-child{border-bottom:none}
+.rn{font-size:14px;font-weight:500}
+.rv{font-size:15px;font-weight:600}
+.sec{font-size:12px;font-weight:700;color:var(--sub);letter-spacing:.6px;padding:4px 16px 8px;margin-top:4px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.sb{background:var(--surface);border-radius:12px;padding:12px;border:1px solid var(--border);text-align:center}
+.sb .sl{font-size:11px;color:var(--sub);margin-bottom:4px}
+.sb .sv{font-size:15px;font-weight:700}
+.pw{margin-bottom:14px}
+.pl{display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px}
+.pb{background:#eef1f5;border-radius:99px;height:8px;overflow:hidden}
+.pf{height:100%;border-radius:99px;transition:width .4s}
+.al{border-radius:10px;padding:11px 13px;font-size:13px;margin-top:8px;font-weight:500}
+.al-r{background:#ffeaea;color:#c0392b;border-left:4px solid #e74c3c}
+.al-a{background:#fff8e6;color:#7d5a00;border-left:4px solid var(--warn)}
+.al-g{background:#e8f8f3;color:#1a7a57;border-left:4px solid var(--primary)}
+.fg{margin-bottom:14px}
+.fl{font-size:13px;font-weight:600;color:var(--sub);margin-bottom:5px;display:block}
+input[type=text],input[type=number],input[type=date],select{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;font-family:inherit;background:#fafbfc;color:var(--text);outline:none;transition:border .15s}
+input:focus,select:focus{border-color:var(--primary);background:#fff}
+.cg{display:flex;gap:8px;margin-top:6px}
+.chip{padding:7px 16px;border-radius:99px;border:1.5px solid var(--border);background:#fafbfc;font-size:13px;font-weight:500;color:var(--sub);cursor:pointer;font-family:inherit;transition:all .15s}
+.chip.on{background:var(--primary);border-color:var(--primary);color:#fff}
+.btn{width:100%;padding:13px;border-radius:12px;border:none;background:var(--primary);color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:4px}
+.btn:active{background:var(--pd)}
+.btn-o{background:#fff;color:var(--primary);border:1.5px solid var(--primary);font-weight:600}
+.btn-sm{padding:8px 14px;font-size:13px;border-radius:8px;width:auto;margin-top:0}
+.btn-d{background:#fff;color:var(--danger);border:1.5px solid var(--danger)}
+.del{background:none;border:none;color:#ccc;font-size:18px;cursor:pointer;padding:4px 8px;border-radius:6px}
+.del:hover{color:var(--danger)}
+.hi{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)}
+.hi:last-child{border-bottom:none}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
+.badge{display:inline-block;padding:2px 7px;border-radius:99px;font-size:10px;font-weight:600;margin-left:4px}
+.bb{background:#dbeafe;color:#1d4ed8}
+.bg2{background:#dcfce7;color:#166634}
+.sep{height:1px;background:var(--border);margin:10px 0}
+.empty{text-align:center;color:var(--sub);padding:24px;font-size:14px}
+.rb{background:#fff;border-radius:12px;padding:13px;margin-bottom:9px;font-size:13px;border-left:4px solid var(--primary);box-shadow:0 2px 6px rgba(0,0,0,.04);line-height:1.7}
+.bnav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--border);display:flex;z-index:100;box-shadow:0 -2px 10px rgba(0,0,0,.07)}
+.ni{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px 6px;font-size:10px;color:var(--sub);cursor:pointer;gap:3px;border:none;background:none}
+.ni.active{color:var(--primary)}
+.ni svg{width:22px;height:22px}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal-bg.hidden{display:none}
+.modal{background:#fff;border-radius:18px;padding:24px;width:100%;max-width:320px;box-shadow:0 8px 32px rgba(0,0,0,.18)}
+.modal h3{font-size:16px;font-weight:700;margin-bottom:12px}
+.modal p{font-size:14px;color:var(--sub);margin-bottom:16px;line-height:1.6;white-space:pre-line}
+.modal input{margin-bottom:14px}
+.mbtns{display:flex;gap:10px}
+.mbtns button{flex:1;padding:11px;border-radius:10px;border:none;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
+.mb-cancel{background:#f0f0f0;color:var(--sub)}
+.mb-ok{background:var(--primary);color:#fff}
+.mb-del{background:var(--danger);color:#fff}
+</style>
+</head>
+<body>
+
+<div class="modal-bg hidden" id="modal-bg">
+  <div class="modal">
+    <h3 id="modal-title"></h3>
+    <p id="modal-msg" style="display:none"></p>
+    <input type="number" id="modal-input" placeholder="" style="display:none">
+    <div class="mbtns" id="modal-btns"></div>
+  </div>
+</div>
+
+<!-- HOME -->
+<div class="page active" id="page-home">
+  <div class="ph"><h1>ホーム</h1><span id="today-lbl" style="font-size:13px;color:var(--sub)"></span></div>
+  <div class="tip"><div class="tip-icon">💡</div><div><div class="tl">TODAY'S TIP</div><div class="tt" id="tip-txt"></div></div></div>
+  <div class="hero">
+    <div class="hl">今月の残り予算</div>
+    <div class="ha" id="hero-rem">¥14,000</div>
+    <div class="hs">手取り ¥330,000 / 固定支出後</div>
+    <div class="hg">
+      <div class="hm"><div class="ml">🏠 保管残高</div><div class="mv" id="h-reserve">—</div></div>
+      <div class="hm"><div class="ml">👜 封筒</div><div class="mv" id="h-envelope">—</div></div>
+    </div>
+  </div>
+  <div class="sec">今週の生活費</div>
+  <div class="card">
+    <div style="font-size:12px;color:var(--sub);margin-bottom:8px" id="week-range"></div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:10px">
+      <div><div style="font-size:12px;color:var(--sub);margin-bottom:2px">残り</div><div style="font-size:26px;font-weight:700" id="week-rem">—</div></div>
+      <div style="text-align:right"><div style="font-size:11px;color:var(--sub)">使用済み</div><div style="font-size:18px;font-weight:600;color:var(--blue)" id="week-used">—</div></div>
+    </div>
+    <div class="pb"><div class="pf" id="week-pf" style="width:0%;background:var(--primary)"></div></div>
+    <div id="week-al"></div>
+  </div>
+  <div class="sec">カテゴリ別 今月</div>
+  <div class="card" id="cat-sum"></div>
+  <div class="sec">クレカ残債</div>
+  <div class="card">
+    <div class="g3" style="margin-bottom:12px">
+      <div class="sb"><div class="sl">リボ</div><div class="sv" id="h-ribo" style="color:var(--danger)">—</div></div>
+      <div class="sb"><div class="sl">分割</div><div class="sv" id="h-bunk" style="color:var(--blue)">—</div></div>
+      <div class="sb"><div class="sl">一括</div><div class="sv" id="h-ikk">—</div></div>
+    </div>
+    <div class="row"><span class="rn">合計残債</span><span class="rv" id="h-total" style="color:var(--danger);font-size:17px">—</span></div>
+    <div class="row"><span class="rn">今月の返済目標</span><span class="rv" style="color:var(--primary)">¥110,000</span></div>
+  </div>
+</div>
+
+<!-- INPUT -->
+<div class="page" id="page-input">
+  <div class="ph"><h1>記録する</h1></div>
+  <div class="card">
+    <div class="fg"><label class="fl">日付</label><input type="date" id="inp-date"></div>
+    <div class="fg"><label class="fl">カテゴリ</label>
+      <select id="inp-cat">
+        <option value="生活費">🛒 生活費（週8,000円）</option>
+        <option value="昼食">🍱 昼食</option>
+        <option value="交際費">🥂 交際費</option>
+        <option value="その他">📌 その他</option>
+        <option value="返済">💳 返済</option>
+        <option value="過食">💰 過食（封筒）</option>
+      </select>
+    </div>
+    <div class="fg"><label class="fl">金額（円）</label><input type="number" id="inp-amt" placeholder="例: 1200" min="0"></div>
+    <div class="fg"><label class="fl">支払い方法</label>
+      <div class="cg">
+        <button class="chip on" id="pay-cash">💴 現金</button>
+        <button class="chip" id="pay-card">💳 クレカ</button>
+      </div>
+    </div>
+    <div class="fg"><label class="fl">メモ（任意）</label><input type="text" id="inp-note" placeholder="例: コンビニランチ"></div>
+    <div id="inp-warn"></div>
+    <button class="btn" id="btn-rec">記録する</button>
+  </div>
+  <div class="sec">封筒・保管管理</div>
+  <div class="card">
+    <div class="row"><span class="rn">🏠 家の保管残高</span><span class="rv" id="c-reserve">—</span></div>
+    <div class="row"><span class="rn">👜 持ち歩き封筒残高</span><span class="rv" id="c-envelope">—</span></div>
+    <div style="font-size:12px;color:var(--sub);margin:8px 0 12px">合計¥10,000。封筒3,000円＋保管残高で管理。</div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-o btn-sm" id="btn-use" style="flex:1">封筒から使う</button>
+      <button class="btn btn-o btn-sm" id="btn-refill" style="flex:1">封筒を補充する</button>
+    </div>
+    <div id="env-msg" style="font-size:13px;color:var(--primary);margin-top:9px;font-weight:500"></div>
+  </div>
+</div>
+
+<!-- HISTORY -->
+<div class="page" id="page-history">
+  <div class="ph"><h1>支出履歴</h1><button class="btn btn-d btn-sm" id="btn-clear">全消去</button></div>
+  <div class="card" id="hist-list"><div class="empty">まだ記録がありません</div></div>
+</div>
+
+<!-- DEBT -->
+<div class="page" id="page-debt">
+  <div class="ph"><h1>借金管理</h1></div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:600;margin-bottom:12px;color:var(--sub)">残高を更新</div>
+    <div class="fg"><label class="fl">リボ残高（円）</label><input type="number" id="d-ribo" placeholder="150000"></div>
+    <div class="fg"><label class="fl">分割残高（円）</label><input type="number" id="d-bunk" placeholder="264000"></div>
+    <div class="fg"><label class="fl">一括残高（円）</label><input type="number" id="d-ikk" placeholder="127000"></div>
+    <button class="btn" id="btn-debt">更新する</button>
+  </div>
+  <div class="sec">完済シミュレーション</div>
+  <div class="card" id="debt-sim"></div>
+  <div class="sec">返済記録</div>
+  <div class="card">
+    <div id="repay-hist"><div class="empty">まだ記録がありません</div></div>
+    <div class="sep"></div>
+    <div style="font-size:13px;font-weight:600;color:var(--sub);margin-bottom:8px">今月の返済を追加</div>
+    <div style="display:flex;gap:8px">
+      <input type="number" id="repay-amt" placeholder="返済額（例: 110000）" style="flex:1">
+      <button class="btn btn-sm" id="btn-repay" style="width:auto">追加</button>
+    </div>
+  </div>
+</div>
+
+<!-- RULES -->
+<div class="page" id="page-rules">
+  <div class="ph"><h1>ルール＆設定</h1></div>
+  <div class="sec">生活費管理</div>
+  <div style="padding:0 16px">
+    <div class="rb"><strong>📅 週8,000円制</strong><br>毎週リセット。追加チャージなし。1日1,000円前後が目安。</div>
+    <div class="rb" style="border-color:var(--warn)"><strong>🍱 使いすぎた翌日</strong><br>軽く調整するだけでOK。完璧を目指さない。</div>
+  </div>
+  <div class="sec">封筒ルール</div>
+  <div style="padding:0 16px">
+    <div class="rb" style="border-color:var(--danger)"><strong>💰 予備金制度（合計¥10,000）</strong><br>家に保管＋持ち歩き封筒3,000円。強い衝動がある時のみ、最大1回3,000円まで。現金のみ。</div>
+    <div class="rb" style="border-color:var(--danger)"><strong>⏰ 補充ルール</strong><br>使った場合、家からの補充は翌日以降。回数制限は設けない。</div>
+  </div>
+  <div class="sec">考え方</div>
+  <div style="padding:0 16px">
+    <div class="rb" style="border-color:#6c5ce7"><strong>🌱 最重要</strong><br>完璧を目指さない。崩れても翌日戻ればOK。「全崩れ」を防ぐことを最優先。</div>
+  </div>
+  <div class="sec">固定支出</div>
+  <div class="card">
+    <div class="row"><span class="rn">💰 手取り</span><span class="rv" style="color:var(--primary)">¥330,000</span></div>
+    <div class="row"><span class="rn">🏠 家賃</span><span class="rv">¥76,000</span></div>
+    <div class="row"><span class="rn">💳 クレカ返済</span><span class="rv">¥154,000</span></div>
+    <div class="row"><span class="rn">🥂 交際費</span><span class="rv">¥30,000</span></div>
+    <div class="row"><span class="rn">🍱 昼食</span><span class="rv">¥15,000</span></div>
+    <div class="row"><span class="rn">📈 投資</span><span class="rv">¥1,000</span></div>
+    <div class="row"><span class="rn">🛒 生活費</span><span class="rv">¥40,000</span></div>
+    <div class="sep"></div>
+    <div class="row"><span class="rn" style="font-weight:700">✨ 残り（自由枠）</span><span class="rv" style="color:var(--primary);font-size:18px">¥14,000</span></div>
+  </div>
+  <div class="sec">クレカ日程</div>
+  <div class="card">
+    <div class="row"><span class="rn">締め日</span><span class="rv">毎月10日</span></div>
+    <div class="row"><span class="rn">支払日</span><span class="rv">翌月2日</span></div>
+    <div class="row"><span class="rn">給料日</span><span class="rv">毎月21日（前営業日）</span></div>
+  </div>
+</div>
+
+<nav class="bnav">
+  <button class="ni active" id="nav-home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>ホーム</button>
+  <button class="ni" id="nav-input"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>記録</button>
+  <button class="ni" id="nav-history"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>履歴</button>
+  <button class="ni" id="nav-debt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>借金</button>
+  <button class="ni" id="nav-rules"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>ルール</button>
+</nav>
+
+<script>
+const STORAGE_KEY = 'kakeibo-v1';
+const DEFAULT = {records:[],debt:{ribo:150000,bunk:264000,ikk:127000},repayments:[],reserve:7000,envelope:3000};
+let S = JSON.parse(JSON.stringify(DEFAULT));
+
+function save() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify({records:S.records,debt:S.debt,repayments:S.repayments,reserve:S.reserve,envelope:S.envelope})); }
+  catch(e) { console.warn('save error',e); }
+}
+function load() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const d = JSON.parse(raw);
+    if (d.records)    S.records    = d.records;
+    if (d.debt)       S.debt       = d.debt;
+    if (d.repayments) S.repayments = d.repayments;
+    if (typeof d.reserve  === 'number') S.reserve  = d.reserve;
+    if (typeof d.envelope === 'number') S.envelope = d.envelope;
+  } catch(e) { console.warn('load error',e); }
+}
+
+const WEEK=8000, BASE=14000;
+const CAT_B={生活費:40000,昼食:15000,交際費:30000,過食:10000};
+const CAT_C={生活費:'#00b894',昼食:'#6c5ce7',交際費:'#0984e3',過食:'#f0a500',その他:'#b2bec3',返済:'#e17055'};
+const TIPS=["「先取り貯蓄」は最強の節約術。給料日に自動で投資するだけで未来が変わる🌱","コンビニでの小さな出費が積み重なると月1万円超えることも。気づくだけで変わる💡","リボ払いの利息は年15〜18%。高金利から返すのは正解！📚","「1日1,000円以内」を守れた日はプチ達成。小さな成功を積み上げよう🎯","財布に現金を決まった額だけ入れる→使いすぎが自然に減る💰","記録する習慣は完璧じゃなくていい。続けることが大事✏️","投資の複利は「時間が最大の武器」。月1,000円でも30年続けると大きな差に📈","クレカの一括払いはOK。リボだけが敵⚡","家計簿をつける人はつけない人より貯蓄額が平均2倍という調査も🏅","「なんとなく出費」を減らすコツは買う前に3秒考えること🤔","給料日前日に残高チェック→翌月の予算に活かす🔄","お金の不安は「見える化」するだけで大きく減る👀","支出を「固定費」と「変動費」に分けると削れる場所がクッキリ見える🔍","借金返済は「高金利から順番に」が鉄則。リボ優先は正解！💪","完済日を可視化するとモチベが続く🏁","財布の中に「使っていいお金だけ」入れる😎","返済が終わったら、その月の返済額をそのまま貯蓄へ✨","「使ったら記録」の習慣は意識するだけで出費が変わる📓","家計管理のゴールは「お金に振り回されない心の余裕」💙","固定費（サブスク等）を年に1回見直すと気づかない支出がゴソッと見つかる🕵️","「後で買う」が口癖になると衝動買いが激減する⏳","完済後の自分を想像して。身軽さと自由さは確実にやってくる🌅","貯金は「余ったら貯める」じゃなく「先に取り分ける」🔑","大きな固定費の見直しは節約効果が絶大📋","今日も記録できたあなたは昨日より賢くなっている🚀","封筒管理は行動経済学の技法。あなたのやり方は理にかなってる👏","完璧じゃなくていい。続けることが最大の武器⭐","週の予算を守れた週は大きな前進🔄","借金が減る瞬間は毎月必ず来る。記録をつけると達成感が増す✅","小さな節約より大きな固定費の見直しが効果絶大。一歩ずつ前進！🎯"];
+
+const fmt = n => '¥'+Math.round(n).toLocaleString('ja-JP');
+const todayTip = () => { const d=new Date(); return TIPS[(d.getFullYear()*500+d.getMonth()*40+d.getDate())%TIPS.length]; };
+
+function modal({title,msg,inputPlaceholder,okLabel,okClass,onOk}) {
+  const bg=document.getElementById('modal-bg');
+  document.getElementById('modal-title').textContent=title;
+  const mp=document.getElementById('modal-msg'), mi=document.getElementById('modal-input');
+  if(msg){mp.textContent=msg;mp.style.display='block';}else mp.style.display='none';
+  if(inputPlaceholder!==undefined){mi.value='';mi.placeholder=inputPlaceholder;mi.style.display='block';setTimeout(()=>mi.focus(),100);}else mi.style.display='none';
+  const btns=document.getElementById('modal-btns'); btns.innerHTML='';
+  const cancel=document.createElement('button'); cancel.className='mb-cancel'; cancel.textContent='キャンセル';
+  cancel.addEventListener('click',()=>bg.classList.add('hidden'));
+  const ok=document.createElement('button'); ok.className=okClass||'mb-ok'; ok.textContent=okLabel||'OK';
+  ok.addEventListener('click',()=>{ const val=mi.style.display!=='none'?(parseInt(mi.value)||0):null; bg.classList.add('hidden'); onOk(val); });
+  btns.appendChild(cancel); btns.appendChild(ok); bg.classList.remove('hidden');
+}
+
+const PAGES=['home','input','history','debt','rules'];
+function go(id) {
+  PAGES.forEach(p=>{ document.getElementById('page-'+p).classList.toggle('active',p===id); document.getElementById('nav-'+p).classList.toggle('active',p===id); });
+  if(id==='home')renderHome(); if(id==='history')renderHistory(); if(id==='debt')renderDebt(); if(id==='input')renderInputCards();
+}
+PAGES.forEach(p=>document.getElementById('nav-'+p).addEventListener('click',()=>go(p)));
+
+function weekStart(){const n=new Date(),day=n.getDay(),diff=n.getDate()-day+(day===0?-6:1);const m=new Date(n);m.setDate(diff);m.setHours(0,0,0,0);return m;}
+function weekRecs(){const ws=weekStart(),we=new Date(ws);we.setDate(we.getDate()+6);we.setHours(23,59,59);return S.records.filter(r=>{const d=new Date(r.date);return r.cat==='生活費'&&d>=ws&&d<=we;});}
+function monthRecs(){const n=new Date();return S.records.filter(r=>{const d=new Date(r.date);return d.getFullYear()===n.getFullYear()&&d.getMonth()===n.getMonth();});}
+
+function renderHome(){
+  const n=new Date();
+  document.getElementById('today-lbl').textContent=(n.getMonth()+1)+'月'+n.getDate()+'日';
+  document.getElementById('tip-txt').textContent=todayTip();
+  document.getElementById('h-reserve').textContent=fmt(S.reserve);
+  document.getElementById('h-envelope').textContent=fmt(S.envelope);
+  document.getElementById('hero-rem').textContent=fmt(BASE-(10000-S.reserve-S.envelope));
+  const wr=weekRecs(),wu=wr.reduce((s,r)=>s+r.amount,0),wrem=WEEK-wu,wpct=Math.min(100,wu/WEEK*100);
+  document.getElementById('week-rem').textContent=fmt(wrem);
+  document.getElementById('week-used').textContent=fmt(wu);
+  const pf=document.getElementById('week-pf');
+  pf.style.width=wpct+'%'; pf.style.background=wpct>=100?'var(--danger)':wpct>=75?'var(--warn)':'var(--primary)';
+  const ws=weekStart(),we=new Date(ws);we.setDate(we.getDate()+6);
+  document.getElementById('week-range').textContent=(ws.getMonth()+1)+'/'+ws.getDate()+'〜'+(we.getMonth()+1)+'/'+we.getDate();
+  let wa='';
+  if(wrem<0)wa=`<div class="al al-r">⚠️ 今週オーバー（${fmt(Math.abs(wrem))}）翌日に調整しよう！</div>`;
+  else if(wrem<2000)wa=`<div class="al al-a">⚡ 残り少なめ。今日は軽めにいこう！</div>`;
+  else wa=`<div class="al al-g">✅ 今週は順調！このまま走りきろう</div>`;
+  document.getElementById('week-al').innerHTML=wa;
+  const mr=monthRecs(); let ch='';
+  Object.entries(CAT_B).forEach(([cat,bud])=>{
+    const used=mr.filter(r=>r.cat===cat).reduce((s,r)=>s+r.amount,0);
+    const pct=Math.min(100,used/bud*100);
+    const col=pct>=100?'var(--danger)':pct>=80?'var(--warn)':CAT_C[cat]||'var(--primary)';
+    ch+=`<div class="pw"><div class="pl"><span style="font-weight:500">${cat}</span><span style="color:var(--sub)">${fmt(used)} / ${fmt(bud)}</span></div><div class="pb"><div class="pf" style="width:${pct}%;background:${col}"></div></div></div>`;
+  });
+  document.getElementById('cat-sum').innerHTML=ch;
+  document.getElementById('h-ribo').textContent=fmt(S.debt.ribo);
+  document.getElementById('h-bunk').textContent=fmt(S.debt.bunk);
+  document.getElementById('h-ikk').textContent=fmt(S.debt.ikk);
+  document.getElementById('h-total').textContent=fmt(S.debt.ribo+S.debt.bunk+S.debt.ikk);
+}
+
+function renderInputCards(){
+  document.getElementById('c-reserve').textContent=fmt(S.reserve);
+  document.getElementById('c-envelope').textContent=fmt(S.envelope);
+}
+
+document.getElementById('pay-cash').addEventListener('click',()=>{ S.pay='現金'; document.getElementById('pay-cash').classList.add('on'); document.getElementById('pay-card').classList.remove('on'); });
+document.getElementById('pay-card').addEventListener('click',()=>{ S.pay='クレカ'; document.getElementById('pay-card').classList.add('on'); document.getElementById('pay-cash').classList.remove('on'); });
+
+document.getElementById('btn-rec').addEventListener('click',()=>{
+  const date=document.getElementById('inp-date').value;
+  const cat=document.getElementById('inp-cat').value;
+  const amount=parseInt(document.getElementById('inp-amt').value)||0;
+  const note=document.getElementById('inp-note').value;
+  const wEl=document.getElementById('inp-warn');
+  if(!date||amount<=0){wEl.innerHTML='<div class="al al-r">日付と金額を入力してください</div>';return;}
+  let warn='';
+  if(cat==='生活費'){const wu=weekRecs().reduce((s,r)=>s+r.amount,0)+amount;if(wu>WEEK)warn='<div class="al al-a">⚠️ 今週の予算を超えます。翌日に調整しましょう。</div>';}
+  if(cat==='過食'){if(amount>3000)warn='<div class="al al-r">⚠️ 1回3,000円ルールを超えています！</div>';if(S.pay==='クレカ')warn+='<div class="al al-a">⚠️ 過食費は現金ルールです。</div>';}
+  wEl.innerHTML=warn;
+  S.records.push({date,cat,amount,note,pay:S.pay||'現金',id:Date.now()});
+  save();
+  document.getElementById('inp-amt').value=''; document.getElementById('inp-note').value='';
+  if(!warn){wEl.innerHTML='<div class="al al-g">✅ 記録しました！</div>';setTimeout(()=>wEl.innerHTML='',2000);}
+  renderHome();
+});
+
+document.getElementById('btn-use').addEventListener('click',()=>{
+  modal({title:'封筒から使う',msg:`使う金額を入力してください（最大3,000円）\n現在の封筒残高：${fmt(S.envelope)}`,inputPlaceholder:'例: 1500',okLabel:'使う',
+    onOk(a){
+      const m=document.getElementById('env-msg');
+      if(!a)return;
+      if(a>3000){m.textContent='⚠️ ルール：1回3,000円まで';return;}
+      if(a>S.envelope){m.textContent='⚠️ 封筒残高が不足しています';return;}
+      S.envelope-=a; save(); renderInputCards(); renderHome();
+      m.textContent='使いました：'+fmt(a)+'　封筒残高：'+fmt(S.envelope)+'　翌日以降に補充してください。';
+    }
+  });
+});
+
+document.getElementById('btn-refill').addEventListener('click',()=>{
+  modal({title:'封筒を補充する',msg:`保管残高（現在${fmt(S.reserve)}）から補充する金額を入力してください。`,inputPlaceholder:'例: 3000',okLabel:'補充する',
+    onOk(a){
+      const m=document.getElementById('env-msg');
+      if(!a)return;
+      if(a>S.reserve){m.textContent='⚠️ 保管残高が不足しています（残高：'+fmt(S.reserve)+'）';return;}
+      if(S.envelope+a>3000){m.textContent='⚠️ 封筒の上限は3,000円です（現在：'+fmt(S.envelope)+'）';return;}
+      S.envelope+=a; S.reserve-=a; save(); renderInputCards(); renderHome();
+      m.textContent='補充しました：'+fmt(a)+'　封筒：'+fmt(S.envelope)+'　保管残高：'+fmt(S.reserve);
+    }
+  });
+});
+
+function renderHistory(){
+  const el=document.getElementById('hist-list');
+  const sorted=[...S.records].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  if(!sorted.length){el.innerHTML='<div class="empty">まだ記録がありません</div>';return;}
+  el.innerHTML='';
+  sorted.forEach(r=>{
+    const d=new Date(r.date),ds=(d.getMonth()+1)+'/'+d.getDate();
+    const col=CAT_C[r.cat]||'#b2bec3';
+    const pb=r.pay==='クレカ'?'<span class="badge bb">クレカ</span>':'<span class="badge bg2">現金</span>';
+    const item=document.createElement('div'); item.className='hi';
+    item.innerHTML=`<div><div style="font-size:11px;color:var(--sub)">${ds}</div><div style="font-size:14px;font-weight:500;margin-top:2px"><span class="dot" style="background:${col}"></span>${r.cat}${pb}</div>${r.note?`<div style="font-size:12px;color:var(--sub);margin-top:1px">${r.note}</div>`:''}</div><div style="display:flex;align-items:center;gap:6px"><div style="font-size:15px;font-weight:600">${fmt(r.amount)}</div><button class="del" data-id="${r.id}">×</button></div>`;
+    item.querySelector('.del').addEventListener('click',()=>{
+      modal({title:'記録を削除',msg:`${r.cat}　${fmt(r.amount)}（${ds}）\nこの記録を削除しますか？`,okLabel:'削除する',okClass:'mb-del',
+        onOk(){S.records=S.records.filter(x=>x.id!==r.id);save();renderHistory();renderHome();}
+      });
+    });
+    el.appendChild(item);
+  });
+}
+
+document.getElementById('btn-clear').addEventListener('click',()=>{
+  modal({title:'全て削除',msg:'全ての記録を削除しますか？\nこの操作は元に戻せません。',okLabel:'全て削除',okClass:'mb-del',
+    onOk(){S.records=[];save();renderHistory();renderHome();}
+  });
+});
+
+function renderDebt(){
+  document.getElementById('d-ribo').value=S.debt.ribo;
+  document.getElementById('d-bunk').value=S.debt.bunk;
+  document.getElementById('d-ikk').value=S.debt.ikk;
+  const total=S.debt.ribo+S.debt.bunk+S.debt.ikk,mn=110000,mo=Math.ceil(total/mn);
+  const end=new Date();end.setMonth(end.getMonth()+mo);
+  document.getElementById('debt-sim').innerHTML=`<div class="row"><span class="rn">合計残債</span><span class="rv" style="color:var(--danger);font-size:17px">${fmt(total)}</span></div><div class="row"><span class="rn">月返済額</span><span class="rv">¥110,000</span></div><div class="row"><span class="rn">完済予定</span><span class="rv" style="color:var(--primary)">約${mo}ヶ月後（${end.getFullYear()}年${end.getMonth()+1}月）🎉</span></div><div class="sep"></div><div style="font-size:12px;color:var(--sub)">※利息は含まない概算です</div>`;
+  let rh='';
+  if(S.repayments.length){[...S.repayments].reverse().forEach(r=>{const d=new Date(r.date);rh+=`<div class="row"><span style="font-size:13px;color:var(--sub)">${(d.getMonth()+1)+'/'+(d.getDate())}</span><span style="font-weight:600;color:var(--primary)">${fmt(r.amount)}</span></div>`;});}
+  else rh='<div class="empty">まだ記録がありません</div>';
+  document.getElementById('repay-hist').innerHTML=rh;
+}
+
+document.getElementById('btn-debt').addEventListener('click',()=>{
+  S.debt={ribo:parseInt(document.getElementById('d-ribo').value)||0,bunk:parseInt(document.getElementById('d-bunk').value)||0,ikk:parseInt(document.getElementById('d-ikk').value)||0};
+  save(); renderDebt(); renderHome();
+  const sim=document.getElementById('debt-sim');
+  sim.insertAdjacentHTML('afterbegin','<div class="al al-g" style="margin-bottom:10px">✅ 残高を更新しました</div>');
+  setTimeout(()=>{const a=sim.querySelector('.al-g');if(a)a.remove();},2000);
+});
+
+document.getElementById('btn-repay').addEventListener('click',()=>{
+  const a=parseInt(document.getElementById('repay-amt').value)||0;
+  if(!a)return;
+  S.repayments.push({date:new Date().toISOString().slice(0,10),amount:a});
+  document.getElementById('repay-amt').value=''; save(); renderDebt();
+});
+
+load();
+document.getElementById('inp-date').value=new Date().toISOString().slice(0,10);
+renderHome();
+</script>
+</body>
+</html>
