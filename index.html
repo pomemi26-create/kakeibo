@@ -10,7 +10,7 @@
 body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;background:var(--bg);color:var(--text);font-size:15px;min-height:100vh;padding-bottom:72px}
 .page{display:none;max-width:480px;margin:0 auto;padding-bottom:8px}
 .page.active{display:block}
-.ph{padding:20px 16px 10px;display:flex;justify-content:space-between;align-items:center}
+.ph{padding:20px 16px 10px;display:flex;justify-content:space-between;align-items:center;gap:8px}
 .ph h1{font-size:18px;font-weight:700}
 .card{background:var(--surface);border-radius:14px;padding:16px;margin:0 16px 12px;border:1px solid var(--border)}
 .hero{background:linear-gradient(135deg,#00b894,#00cec9);border-radius:18px;padding:20px;margin:0 16px 12px;color:#fff;box-shadow:0 4px 16px rgba(0,184,148,.25)}
@@ -54,6 +54,7 @@ input:focus,select:focus{border-color:var(--primary);background:#fff}
 .btn-o{background:#fff;color:var(--primary);border:1.5px solid var(--primary);font-weight:600}
 .btn-sm{padding:8px 14px;font-size:13px;border-radius:8px;width:auto;margin-top:0}
 .btn-d{background:#fff;color:var(--danger);border:1.5px solid var(--danger)}
+.btn-csv{background:#fff;color:var(--blue);border:1.5px solid var(--blue);font-weight:600}
 .del{background:none;border:none;color:#ccc;font-size:18px;cursor:pointer;padding:4px 8px;border-radius:6px}
 .del:hover{color:var(--danger)}
 .hi{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)}
@@ -65,10 +66,13 @@ input:focus,select:focus{border-color:var(--primary);background:#fff}
 .sep{height:1px;background:var(--border);margin:10px 0}
 .empty{text-align:center;color:var(--sub);padding:24px;font-size:14px}
 .rb{background:#fff;border-radius:12px;padding:13px;margin-bottom:9px;font-size:13px;border-left:4px solid var(--primary);box-shadow:0 2px 6px rgba(0,0,0,.04);line-height:1.7}
+.remain-box{background:#e8f8f3;border-radius:10px;padding:12px;margin-bottom:14px}
+.remain-box .rl{font-size:12px;color:var(--sub);margin-bottom:4px}
+.remain-box .rv2{font-size:22px;font-weight:700;color:var(--primary)}
 .bnav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--border);display:flex;z-index:100;box-shadow:0 -2px 10px rgba(0,0,0,.07)}
-.ni{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px 6px;font-size:10px;color:var(--sub);cursor:pointer;gap:3px;border:none;background:none}
+.ni{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 2px 6px;font-size:10px;color:var(--sub);cursor:pointer;gap:3px;border:none;background:none}
 .ni.active{color:var(--primary)}
-.ni svg{width:22px;height:22px}
+.ni svg{width:20px;height:20px}
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px}
 .modal-bg.hidden{display:none}
 .modal{background:#fff;border-radius:18px;padding:24px;width:100%;max-width:320px;box-shadow:0 8px 32px rgba(0,0,0,.18)}
@@ -98,9 +102,9 @@ input:focus,select:focus{border-color:var(--primary);background:#fff}
   <div class="ph"><h1>ホーム</h1><span id="today-lbl" style="font-size:13px;color:var(--sub)"></span></div>
   <div class="tip"><div class="tip-icon">💡</div><div><div class="tl">TODAY'S TIP</div><div class="tt" id="tip-txt"></div></div></div>
   <div class="hero">
-    <div class="hl">今月の残り予算</div>
-    <div class="ha" id="hero-rem">¥14,000</div>
-    <div class="hs">手取り ¥330,000 / 固定支出後</div>
+    <div class="hl" id="hero-period">今月の残り予算</div>
+    <div class="ha" id="hero-rem">¥—</div>
+    <div class="hs">手取り <span id="hero-income">¥—</span> / 固定支出後</div>
     <div class="hg">
       <div class="hm"><div class="ml">🏠 保管残高</div><div class="mv" id="h-reserve">—</div></div>
       <div class="hm"><div class="ml">👜 封筒</div><div class="mv" id="h-envelope">—</div></div>
@@ -160,7 +164,7 @@ input:focus,select:focus{border-color:var(--primary);background:#fff}
   <div class="card">
     <div class="row"><span class="rn">🏠 家の保管残高</span><span class="rv" id="c-reserve">—</span></div>
     <div class="row"><span class="rn">👜 持ち歩き封筒残高</span><span class="rv" id="c-envelope">—</span></div>
-    <div style="font-size:12px;color:var(--sub);margin:8px 0 12px">合計¥10,000。封筒3,000円＋保管残高で管理。</div>
+    <div style="font-size:12px;color:var(--sub);margin:8px 0 12px">封筒＋保管残高の合計で管理。</div>
     <div style="display:flex;gap:8px">
       <button class="btn btn-o btn-sm" id="btn-use" style="flex:1">封筒から使う</button>
       <button class="btn btn-o btn-sm" id="btn-refill" style="flex:1">封筒を補充する</button>
@@ -171,7 +175,13 @@ input:focus,select:focus{border-color:var(--primary);background:#fff}
 
 <!-- HISTORY -->
 <div class="page" id="page-history">
-  <div class="ph"><h1>支出履歴</h1><button class="btn btn-d btn-sm" id="btn-clear">全消去</button></div>
+  <div class="ph">
+    <h1>支出履歴</h1>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-csv btn-sm" id="btn-csv">CSV出力</button>
+      <button class="btn btn-d btn-sm" id="btn-clear">全消去</button>
+    </div>
+  </div>
   <div class="card" id="hist-list"><div class="empty">まだ記録がありません</div></div>
 </div>
 
@@ -199,34 +209,36 @@ input:focus,select:focus{border-color:var(--primary);background:#fff}
   </div>
 </div>
 
-<!-- RULES -->
-<div class="page" id="page-rules">
-  <div class="ph"><h1>ルール＆設定</h1></div>
-  <div class="sec">生活費管理</div>
+<!-- SETTINGS -->
+<div class="page" id="page-settings">
+  <div class="ph"><h1>予算設定</h1></div>
+  <div class="card">
+    <div style="font-size:13px;color:var(--sub);margin-bottom:16px;line-height:1.7;background:#f9f9f6;border-radius:10px;padding:10px">
+      📅 給料日：毎月21日（祝日・休日の場合は前倒し）<br>
+      📆 予算期間：21日〜翌月20日
+    </div>
+    <div class="fg"><label class="fl">💰 手取り（円）</label><input type="number" id="s-income" placeholder="330000"></div>
+    <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:10px;margin-top:-6px">── 固定支出 ──</div>
+    <div class="fg"><label class="fl">🏠 家賃（円）</label><input type="number" id="s-rent" placeholder="76000"></div>
+    <div class="fg"><label class="fl">💳 クレカ返済（円）</label><input type="number" id="s-card" placeholder="154000"></div>
+    <div class="fg"><label class="fl">🥂 交際費（円）</label><input type="number" id="s-social" placeholder="30000"></div>
+    <div class="fg"><label class="fl">🍱 昼食（円）</label><input type="number" id="s-lunch" placeholder="15000"></div>
+    <div class="fg"><label class="fl">📈 投資（円）</label><input type="number" id="s-invest" placeholder="1000"></div>
+    <div class="fg"><label class="fl">🛒 生活費（円）</label><input type="number" id="s-living" placeholder="40000"></div>
+    <div class="fg"><label class="fl">💰 過食用予備金（円）</label><input type="number" id="s-pocket" placeholder="10000"></div>
+    <div class="remain-box">
+      <div class="rl">残り（自由枠）</div>
+      <div class="rv2" id="s-remaining">¥—</div>
+    </div>
+    <button class="btn" id="btn-save-settings">保存する</button>
+    <div id="settings-msg" style="font-size:13px;margin-top:10px;font-weight:500"></div>
+  </div>
+  <div class="sec">考え方のルール</div>
   <div style="padding:0 16px">
     <div class="rb"><strong>📅 週8,000円制</strong><br>毎週リセット。追加チャージなし。1日1,000円前後が目安。</div>
     <div class="rb" style="border-color:var(--warn)"><strong>🍱 使いすぎた翌日</strong><br>軽く調整するだけでOK。完璧を目指さない。</div>
-  </div>
-  <div class="sec">封筒ルール</div>
-  <div style="padding:0 16px">
-    <div class="rb" style="border-color:var(--danger)"><strong>💰 予備金制度（合計¥10,000）</strong><br>家に保管＋持ち歩き封筒3,000円。強い衝動がある時のみ、最大1回3,000円まで。現金のみ。</div>
-    <div class="rb" style="border-color:var(--danger)"><strong>⏰ 補充ルール</strong><br>使った場合、家からの補充は翌日以降。回数制限は設けない。</div>
-  </div>
-  <div class="sec">考え方</div>
-  <div style="padding:0 16px">
+    <div class="rb" style="border-color:var(--danger)"><strong>💰 封筒制度</strong><br>家に保管＋持ち歩き封筒3,000円。強い衝動がある時のみ、最大1回3,000円まで。現金のみ。補充は翌日以降。</div>
     <div class="rb" style="border-color:#6c5ce7"><strong>🌱 最重要</strong><br>完璧を目指さない。崩れても翌日戻ればOK。「全崩れ」を防ぐことを最優先。</div>
-  </div>
-  <div class="sec">固定支出</div>
-  <div class="card">
-    <div class="row"><span class="rn">💰 手取り</span><span class="rv" style="color:var(--primary)">¥330,000</span></div>
-    <div class="row"><span class="rn">🏠 家賃</span><span class="rv">¥76,000</span></div>
-    <div class="row"><span class="rn">💳 クレカ返済</span><span class="rv">¥154,000</span></div>
-    <div class="row"><span class="rn">🥂 交際費</span><span class="rv">¥30,000</span></div>
-    <div class="row"><span class="rn">🍱 昼食</span><span class="rv">¥15,000</span></div>
-    <div class="row"><span class="rn">📈 投資</span><span class="rv">¥1,000</span></div>
-    <div class="row"><span class="rn">🛒 生活費</span><span class="rv">¥40,000</span></div>
-    <div class="sep"></div>
-    <div class="row"><span class="rn" style="font-weight:700">✨ 残り（自由枠）</span><span class="rv" style="color:var(--primary);font-size:18px">¥14,000</span></div>
   </div>
   <div class="sec">クレカ日程</div>
   <div class="card">
@@ -241,21 +253,32 @@ input:focus,select:focus{border-color:var(--primary);background:#fff}
   <button class="ni" id="nav-input"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>記録</button>
   <button class="ni" id="nav-history"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>履歴</button>
   <button class="ni" id="nav-debt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>借金</button>
-  <button class="ni" id="nav-rules"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>ルール</button>
+  <button class="ni" id="nav-settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>設定</button>
 </nav>
 
 <script>
-const STORAGE_KEY = 'kakeibo-v1';
-const DEFAULT = {records:[],debt:{ribo:150000,bunk:264000,ikk:127000},repayments:[],reserve:7000,envelope:3000};
-let S = JSON.parse(JSON.stringify(DEFAULT));
+// ═══════════════════════════════════════════
+// STATE & STORAGE
+// ═══════════════════════════════════════════
+const KEY = 'kakeibo-v2';
+const DEFAULT_BUDGET = {income:330000,rent:76000,card:154000,social:30000,lunch:15000,invest:1000,living:40000,pocket:10000};
+
+let S = {
+  records: [],
+  debt: {ribo:150000, bunk:264000, ikk:127000},
+  repayments: [],
+  reserve: 7000,
+  envelope: 3000,
+  pay: '現金',
+  budget: {...DEFAULT_BUDGET}
+};
 
 function save() {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify({records:S.records,debt:S.debt,repayments:S.repayments,reserve:S.reserve,envelope:S.envelope})); }
-  catch(e) { console.warn('save error',e); }
+  try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e) {}
 }
 function load() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(KEY);
     if (!raw) return;
     const d = JSON.parse(raw);
     if (d.records)    S.records    = d.records;
@@ -263,17 +286,49 @@ function load() {
     if (d.repayments) S.repayments = d.repayments;
     if (typeof d.reserve  === 'number') S.reserve  = d.reserve;
     if (typeof d.envelope === 'number') S.envelope = d.envelope;
-  } catch(e) { console.warn('load error',e); }
+    if (d.budget)     S.budget     = {...DEFAULT_BUDGET, ...d.budget};
+  } catch(e) {}
 }
 
-const WEEK=8000, BASE=14000;
-const CAT_B={生活費:40000,昼食:15000,交際費:30000,過食:10000};
-const CAT_C={生活費:'#00b894',昼食:'#6c5ce7',交際費:'#0984e3',過食:'#f0a500',その他:'#b2bec3',返済:'#e17055'};
-const TIPS=["「先取り貯蓄」は最強の節約術。給料日に自動で投資するだけで未来が変わる🌱","コンビニでの小さな出費が積み重なると月1万円超えることも。気づくだけで変わる💡","リボ払いの利息は年15〜18%。高金利から返すのは正解！📚","「1日1,000円以内」を守れた日はプチ達成。小さな成功を積み上げよう🎯","財布に現金を決まった額だけ入れる→使いすぎが自然に減る💰","記録する習慣は完璧じゃなくていい。続けることが大事✏️","投資の複利は「時間が最大の武器」。月1,000円でも30年続けると大きな差に📈","クレカの一括払いはOK。リボだけが敵⚡","家計簿をつける人はつけない人より貯蓄額が平均2倍という調査も🏅","「なんとなく出費」を減らすコツは買う前に3秒考えること🤔","給料日前日に残高チェック→翌月の予算に活かす🔄","お金の不安は「見える化」するだけで大きく減る👀","支出を「固定費」と「変動費」に分けると削れる場所がクッキリ見える🔍","借金返済は「高金利から順番に」が鉄則。リボ優先は正解！💪","完済日を可視化するとモチベが続く🏁","財布の中に「使っていいお金だけ」入れる😎","返済が終わったら、その月の返済額をそのまま貯蓄へ✨","「使ったら記録」の習慣は意識するだけで出費が変わる📓","家計管理のゴールは「お金に振り回されない心の余裕」💙","固定費（サブスク等）を年に1回見直すと気づかない支出がゴソッと見つかる🕵️","「後で買う」が口癖になると衝動買いが激減する⏳","完済後の自分を想像して。身軽さと自由さは確実にやってくる🌅","貯金は「余ったら貯める」じゃなく「先に取り分ける」🔑","大きな固定費の見直しは節約効果が絶大📋","今日も記録できたあなたは昨日より賢くなっている🚀","封筒管理は行動経済学の技法。あなたのやり方は理にかなってる👏","完璧じゃなくていい。続けることが最大の武器⭐","週の予算を守れた週は大きな前進🔄","借金が減る瞬間は毎月必ず来る。記録をつけると達成感が増す✅","小さな節約より大きな固定費の見直しが効果絶大。一歩ずつ前進！🎯"];
+// ═══════════════════════════════════════════
+// BUDGET HELPERS
+// ═══════════════════════════════════════════
+function getFixed() {
+  const b = S.budget;
+  return b.rent + b.card + b.social + b.lunch + b.invest + b.living + b.pocket;
+}
+function getFree() { return S.budget.income - getFixed(); }
+function getPocketTotal() { return S.budget.pocket; }
+
+// 今月の予算期間（21日〜翌月20日）
+function getPeriod() {
+  const now = new Date();
+  let start, end;
+  if (now.getDate() >= 21) {
+    start = new Date(now.getFullYear(), now.getMonth(), 21);
+    end   = new Date(now.getFullYear(), now.getMonth()+1, 20);
+  } else {
+    start = new Date(now.getFullYear(), now.getMonth()-1, 21);
+    end   = new Date(now.getFullYear(), now.getMonth(), 20);
+  }
+  start.setHours(0,0,0,0); end.setHours(23,59,59,999);
+  return {start, end};
+}
+function periodRecs() {
+  const {start, end} = getPeriod();
+  return S.records.filter(r => { const d = new Date(r.date); return d >= start && d <= end; });
+}
+
+const WEEK = 8000;
+const CAT_C = {生活費:'#00b894',昼食:'#6c5ce7',交際費:'#0984e3',過食:'#f0a500',その他:'#b2bec3',返済:'#e17055'};
+const TIPS = ["「先取り貯蓄」は最強の節約術。給料日に自動で投資するだけで未来が変わる🌱","コンビニでの小さな出費が積み重なると月1万円超えることも。気づくだけで変わる💡","リボ払いの利息は年15〜18%。高金利から返すのは正解！📚","「1日1,000円以内」を守れた日はプチ達成。小さな成功を積み上げよう🎯","財布に現金を決まった額だけ入れる→使いすぎが自然に減る💰","記録する習慣は完璧じゃなくていい。続けることが大事✏️","投資の複利は「時間が最大の武器」。月1,000円でも30年続けると大きな差に📈","クレカの一括払いはOK。リボだけが敵⚡","家計簿をつける人はつけない人より貯蓄額が平均2倍という調査も🏅","「なんとなく出費」を減らすコツは買う前に3秒考えること🤔","給料日前日に残高チェック→翌月の予算に活かす🔄","お金の不安は「見える化」するだけで大きく減る👀","支出を「固定費」と「変動費」に分けると削れる場所がクッキリ見える🔍","借金返済は「高金利から順番に」が鉄則。リボ優先は正解！💪","完済日を可視化するとモチベが続く🏁","財布の中に「使っていいお金だけ」入れる😎","返済が終わったら、その月の返済額をそのまま貯蓄へ✨","「使ったら記録」の習慣は意識するだけで出費が変わる📓","家計管理のゴールは「お金に振り回されない心の余裕」💙","固定費（サブスク等）を年に1回見直すと気づかない支出がゴソッと見つかる🕵️","「後で買う」が口癖になると衝動買いが激減する⏳","完済後の自分を想像して。身軽さと自由さは確実にやってくる🌅","貯金は「余ったら貯める」じゃなく「先に取り分ける」🔑","大きな固定費の見直しは節約効果が絶大📋","今日も記録できたあなたは昨日より賢くなっている🚀","封筒管理は行動経済学の技法。あなたのやり方は理にかなってる👏","完璧じゃなくていい。続けることが最大の武器⭐","週の予算を守れた週は大きな前進🔄","借金が減る瞬間は毎月必ず来る。記録をつけると達成感が増す✅","小さな節約より大きな固定費の見直しが効果絶大。一歩ずつ前進！🎯"];
 
 const fmt = n => '¥'+Math.round(n).toLocaleString('ja-JP');
 const todayTip = () => { const d=new Date(); return TIPS[(d.getFullYear()*500+d.getMonth()*40+d.getDate())%TIPS.length]; };
 
+// ═══════════════════════════════════════════
+// MODAL
+// ═══════════════════════════════════════════
 function modal({title,msg,inputPlaceholder,okLabel,okClass,onOk}) {
   const bg=document.getElementById('modal-bg');
   document.getElementById('modal-title').textContent=title;
@@ -288,24 +343,46 @@ function modal({title,msg,inputPlaceholder,okLabel,okClass,onOk}) {
   btns.appendChild(cancel); btns.appendChild(ok); bg.classList.remove('hidden');
 }
 
-const PAGES=['home','input','history','debt','rules'];
+// ═══════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════
+const PAGES=['home','input','history','debt','settings'];
 function go(id) {
   PAGES.forEach(p=>{ document.getElementById('page-'+p).classList.toggle('active',p===id); document.getElementById('nav-'+p).classList.toggle('active',p===id); });
-  if(id==='home')renderHome(); if(id==='history')renderHistory(); if(id==='debt')renderDebt(); if(id==='input')renderInputCards();
+  if(id==='home')     renderHome();
+  if(id==='history')  renderHistory();
+  if(id==='debt')     renderDebt();
+  if(id==='input')    renderInputCards();
+  if(id==='settings') renderSettings();
 }
 PAGES.forEach(p=>document.getElementById('nav-'+p).addEventListener('click',()=>go(p)));
 
+// ═══════════════════════════════════════════
+// WEEK HELPERS
+// ═══════════════════════════════════════════
 function weekStart(){const n=new Date(),day=n.getDay(),diff=n.getDate()-day+(day===0?-6:1);const m=new Date(n);m.setDate(diff);m.setHours(0,0,0,0);return m;}
 function weekRecs(){const ws=weekStart(),we=new Date(ws);we.setDate(we.getDate()+6);we.setHours(23,59,59);return S.records.filter(r=>{const d=new Date(r.date);return r.cat==='生活費'&&d>=ws&&d<=we;});}
-function monthRecs(){const n=new Date();return S.records.filter(r=>{const d=new Date(r.date);return d.getFullYear()===n.getFullYear()&&d.getMonth()===n.getMonth();});}
 
-function renderHome(){
+// ═══════════════════════════════════════════
+// RENDER HOME
+// ═══════════════════════════════════════════
+function renderHome() {
   const n=new Date();
   document.getElementById('today-lbl').textContent=(n.getMonth()+1)+'月'+n.getDate()+'日';
   document.getElementById('tip-txt').textContent=todayTip();
   document.getElementById('h-reserve').textContent=fmt(S.reserve);
   document.getElementById('h-envelope').textContent=fmt(S.envelope);
-  document.getElementById('hero-rem').textContent=fmt(BASE-(10000-S.reserve-S.envelope));
+  document.getElementById('hero-income').textContent=fmt(S.budget.income);
+
+  // 予算期間表示
+  const {start,end}=getPeriod();
+  document.getElementById('hero-period').textContent=`${start.getMonth()+1}/${start.getDate()}〜${end.getMonth()+1}/${end.getDate()} の残り予算`;
+
+  // 残り予算 = 自由枠 - 封筒・保管から使った分
+  const pocketUsed = getPocketTotal() - S.reserve - S.envelope;
+  document.getElementById('hero-rem').textContent=fmt(getFree()-pocketUsed);
+
+  // 週
   const wr=weekRecs(),wu=wr.reduce((s,r)=>s+r.amount,0),wrem=WEEK-wu,wpct=Math.min(100,wu/WEEK*100);
   document.getElementById('week-rem').textContent=fmt(wrem);
   document.getElementById('week-used').textContent=fmt(wu);
@@ -318,20 +395,27 @@ function renderHome(){
   else if(wrem<2000)wa=`<div class="al al-a">⚡ 残り少なめ。今日は軽めにいこう！</div>`;
   else wa=`<div class="al al-g">✅ 今週は順調！このまま走りきろう</div>`;
   document.getElementById('week-al').innerHTML=wa;
-  const mr=monthRecs(); let ch='';
+
+  // カテゴリ別（予算期間）
+  const CAT_B={生活費:S.budget.living,昼食:S.budget.lunch,交際費:S.budget.social,過食:S.budget.pocket};
+  const pr=periodRecs(); let ch='';
   Object.entries(CAT_B).forEach(([cat,bud])=>{
-    const used=mr.filter(r=>r.cat===cat).reduce((s,r)=>s+r.amount,0);
+    const used=pr.filter(r=>r.cat===cat).reduce((s,r)=>s+r.amount,0);
     const pct=Math.min(100,used/bud*100);
     const col=pct>=100?'var(--danger)':pct>=80?'var(--warn)':CAT_C[cat]||'var(--primary)';
     ch+=`<div class="pw"><div class="pl"><span style="font-weight:500">${cat}</span><span style="color:var(--sub)">${fmt(used)} / ${fmt(bud)}</span></div><div class="pb"><div class="pf" style="width:${pct}%;background:${col}"></div></div></div>`;
   });
   document.getElementById('cat-sum').innerHTML=ch;
+
   document.getElementById('h-ribo').textContent=fmt(S.debt.ribo);
   document.getElementById('h-bunk').textContent=fmt(S.debt.bunk);
   document.getElementById('h-ikk').textContent=fmt(S.debt.ikk);
   document.getElementById('h-total').textContent=fmt(S.debt.ribo+S.debt.bunk+S.debt.ikk);
 }
 
+// ═══════════════════════════════════════════
+// INPUT
+// ═══════════════════════════════════════════
 function renderInputCards(){
   document.getElementById('c-reserve').textContent=fmt(S.reserve);
   document.getElementById('c-envelope').textContent=fmt(S.envelope);
@@ -384,6 +468,9 @@ document.getElementById('btn-refill').addEventListener('click',()=>{
   });
 });
 
+// ═══════════════════════════════════════════
+// HISTORY
+// ═══════════════════════════════════════════
 function renderHistory(){
   const el=document.getElementById('hist-list');
   const sorted=[...S.records].sort((a,b)=>new Date(b.date)-new Date(a.date));
@@ -410,6 +497,22 @@ document.getElementById('btn-clear').addEventListener('click',()=>{
   });
 });
 
+// CSV出力
+document.getElementById('btn-csv').addEventListener('click',()=>{
+  if(!S.records.length){alert('記録がありません');return;}
+  const BOM='\uFEFF';
+  const header='日付,カテゴリ,金額,支払い方法,メモ\n';
+  const rows=[...S.records].sort((a,b)=>new Date(a.date)-new Date(b.date)).map(r=>`${r.date},${r.cat},${r.amount},${r.pay||'現金'},"${(r.note||'').replace(/"/g,'""')}"`).join('\n');
+  const blob=new Blob([BOM+header+rows],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download='kakeibo_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click(); URL.revokeObjectURL(url);
+});
+
+// ═══════════════════════════════════════════
+// DEBT
+// ═══════════════════════════════════════════
 function renderDebt(){
   document.getElementById('d-ribo').value=S.debt.ribo;
   document.getElementById('d-bunk').value=S.debt.bunk;
@@ -422,7 +525,6 @@ function renderDebt(){
   else rh='<div class="empty">まだ記録がありません</div>';
   document.getElementById('repay-hist').innerHTML=rh;
 }
-
 document.getElementById('btn-debt').addEventListener('click',()=>{
   S.debt={ribo:parseInt(document.getElementById('d-ribo').value)||0,bunk:parseInt(document.getElementById('d-bunk').value)||0,ikk:parseInt(document.getElementById('d-ikk').value)||0};
   save(); renderDebt(); renderHome();
@@ -430,7 +532,6 @@ document.getElementById('btn-debt').addEventListener('click',()=>{
   sim.insertAdjacentHTML('afterbegin','<div class="al al-g" style="margin-bottom:10px">✅ 残高を更新しました</div>');
   setTimeout(()=>{const a=sim.querySelector('.al-g');if(a)a.remove();},2000);
 });
-
 document.getElementById('btn-repay').addEventListener('click',()=>{
   const a=parseInt(document.getElementById('repay-amt').value)||0;
   if(!a)return;
@@ -438,6 +539,56 @@ document.getElementById('btn-repay').addEventListener('click',()=>{
   document.getElementById('repay-amt').value=''; save(); renderDebt();
 });
 
+// ═══════════════════════════════════════════
+// SETTINGS
+// ═══════════════════════════════════════════
+function calcRemaining(){
+  const vals=['s-income','s-rent','s-card','s-social','s-lunch','s-invest','s-living','s-pocket'].map(id=>parseInt(document.getElementById(id).value)||0);
+  const [income,...costs]=vals;
+  const rem=income-costs.reduce((a,b)=>a+b,0);
+  const el=document.getElementById('s-remaining');
+  el.textContent=fmt(rem);
+  el.style.color=rem<0?'var(--danger)':'var(--primary)';
+}
+['s-income','s-rent','s-card','s-social','s-lunch','s-invest','s-living','s-pocket'].forEach(id=>document.getElementById(id).addEventListener('input',calcRemaining));
+
+function renderSettings(){
+  const b=S.budget;
+  document.getElementById('s-income').value=b.income;
+  document.getElementById('s-rent').value=b.rent;
+  document.getElementById('s-card').value=b.card;
+  document.getElementById('s-social').value=b.social;
+  document.getElementById('s-lunch').value=b.lunch;
+  document.getElementById('s-invest').value=b.invest;
+  document.getElementById('s-living').value=b.living;
+  document.getElementById('s-pocket').value=b.pocket;
+  calcRemaining();
+}
+
+document.getElementById('btn-save-settings').addEventListener('click',()=>{
+  S.budget={
+    income: parseInt(document.getElementById('s-income').value)||0,
+    rent:   parseInt(document.getElementById('s-rent').value)||0,
+    card:   parseInt(document.getElementById('s-card').value)||0,
+    social: parseInt(document.getElementById('s-social').value)||0,
+    lunch:  parseInt(document.getElementById('s-lunch').value)||0,
+    invest: parseInt(document.getElementById('s-invest').value)||0,
+    living: parseInt(document.getElementById('s-living').value)||0,
+    pocket: parseInt(document.getElementById('s-pocket').value)||0,
+  };
+  // 過食用予備金が変わったら保管残高・封筒をリセット
+  const total=S.budget.pocket;
+  if(S.reserve+S.envelope>total){ S.envelope=Math.min(S.envelope,total); S.reserve=total-S.envelope; }
+  save();
+  const msg=document.getElementById('settings-msg');
+  msg.innerHTML='<div class="al al-g">✅ 保存しました！</div>';
+  setTimeout(()=>msg.innerHTML='',2000);
+  renderHome();
+});
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
 load();
 document.getElementById('inp-date').value=new Date().toISOString().slice(0,10);
 renderHome();
